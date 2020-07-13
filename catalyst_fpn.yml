@@ -1,0 +1,73 @@
+# Train data: 256x512 crop images
+# Augmentations: Hflip, Vflip, RandomBrightnessContrast (from albumentations)
+# Batchsize: 12 or 24 (both accumulate gradients for 24 samples)
+# Optimizer: Rectified Adam
+# Models: Unet (efficientnet-b3), FPN (efficientnet-b3) from @pavel92 segmentationmodelspytorch
+# Loss:
+# BCE (with posweight = (2.0,2.0,1.0,1.5)) 0.75BCE+0.25DICE (with posweight = (2.0,2.0,1.0,1.5))
+# Model Ensemble:
+# 1 x Unet(BCE loss) + 3 x FPN(first trained with BCE loss then finetuned with BCEDice loss) +2 x FPN(BCEloss)+ 3 x Unet from mlcomp+catalyst infer
+# TTA: None, Hflip, Vflip
+# Label Thresholds: 0.7, 0.7, 0.6, 0.6
+# Pixel Thresholds: 0.55,0.55,0.55,0.55
+# Postprocessing:
+# Remove whole mask if total pixel < threshold (600,600,900,2000) + remove small components with size <150
+
+model_params:
+  model: SMPFPN
+  classes: 4
+  encoder_name: timm-efficientnet-b3
+
+args:
+  expdir: "segmentation"
+  logdir: "log"
+
+stages:
+
+  data_params:
+    num_workers: 2
+    batch_size: 30
+    per_gpu_scaling: True
+    img_folder: 'data/train_images/'
+    mask_folder: 'data/train_masks/'
+    fold_csv: 'data/masks.csv'
+    fold_number: 0
+
+  state_params:
+    main_metric: dice
+    minimize_metric: False
+
+  criterion_params:
+    criterion: BCEDiceLoss
+    bce_weight: 0.75
+    dice_weight: 0.25 
+
+  scheduler_params:
+    scheduler: OneCycleLRWithWarmup
+    num_steps: 300 #num_epochs
+    lr_range: [0.001, 0.0001]
+    warmup_steps: 1
+
+  callbacks_params:
+    loss:
+      callback: CriterionCallback
+    optimizer:
+      callback: OptimizerCallback
+      accumulation_steps: 8
+    saver:
+      callback: CheckpointCallback
+    dice:
+      callback: DiceCallback
+
+  stage1:
+    state_params:
+      num_epochs: 300
+
+    optimizer_params:
+      optimizer: RAdam
+      lr: 0.001
+      layerwise_params:
+        model.encoder*:
+          lr: 0.00001
+        model.decoder*:
+          lr: 0.001
