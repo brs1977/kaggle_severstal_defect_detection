@@ -1,6 +1,7 @@
 .vscode/
 __pycache__/
-segmentation/__pycache__
+.ipynb_checkpoints/
+segmentation/__pycache__/
 data/*
 !data/data_load.sh
 logs/*
