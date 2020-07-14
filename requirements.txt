@@ -9,3 +9,7 @@ ttach
 torch
 skimage
 segmentation_models_pytorch
+fastapi
+python-multipart
+pytest
+uvicorn

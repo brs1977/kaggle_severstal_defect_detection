@@ -21,3 +21,7 @@ catalyst-dl trace ./logs/{model_path}
 5. Predict
 
 python predictor.py -i {file_image} -o {output_path} -m {file_model}
+
+6. Start REST Server 
+
+uvicorn server:app
