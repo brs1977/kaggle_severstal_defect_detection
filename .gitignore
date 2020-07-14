@@ -5,3 +5,4 @@ segmentation/__pycache__/
 data/*
 !data/data_load.sh
 logs/*
+output/

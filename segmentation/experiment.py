@@ -7,10 +7,6 @@ from mlcomp.contrib.dataset.segment import ImageWithMaskDataset
 from mlcomp.contrib.transform.albumentations import ChannelTranspose
 from mlcomp.utils.config import parse_albu
 
-# import segmentation_models_pytorch as smp
-# ENCODER_NAME = 'efficientnet-b3'
-# preprocess_input = smp.encoders.get_preprocessing_fn(ENCODER_NAME)
-
 
 class Experiment(ConfigExperiment):
     @staticmethod
@@ -26,7 +22,6 @@ class Experiment(ConfigExperiment):
 
         transforms.extend(
             [
-                # A.Lambda(image=preprocess_input),
                 A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
                 ChannelTranspose()
             ]
@@ -36,7 +31,6 @@ class Experiment(ConfigExperiment):
     @staticmethod
     def prepare_test_transforms():
         transforms = [
-            # A.Lambda(image=preprocess_input),
             A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             ChannelTranspose()
         ]
